@@ -34,7 +34,7 @@ socket()函数在内核中执行流程：
          * sock_create会调用__sock_create函数
          * 若family为PF_INET,就会调用inet_create函数来初始化socket结构体
          */
-        retval = **sock_create**(family, type, protocol, &sock);
+        retval = sock_create(family, type, protocol, &sock);
         if (retval < 0)
             goto out;
 
