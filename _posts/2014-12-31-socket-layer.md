@@ -15,3 +15,45 @@ This way different protocol families are supported by Linux, and their services 
 ###VFS
 VFS is a framework that provides a common interface to various different file systems/pipe/devices/sockets to the user without user knowing how things are organized inside the kernel.
 ![Figure_3.1](./../../../../../../pic/Figure_3.1.png) 
+
+
+socket()
+---
+用户调用socket函数时会调用内核层的sys_socket函数.sys_socket函数通过socket函数传递来的protocol,family
+,type三个参数来创建对应的(TCP/UDP/RAW等)协议栈。
+
+socket()函数在内核中执行流程：
+
+>socket()->sys_socketcall->sys_socket()->sock_create()
+
+    asmlinkage long sys_socket(int family, int type, int protocol)
+    {
+        int retval;
+        struct socket *sock;
+        /*
+         * sock_create依据family，protocol, type来初始化struct socket sock
+         */
+        retval = **sock_create**(family, type, protocol, &sock);
+        if (retval < 0)
+            goto out;
+
+        /*
+         * 把struct socket sock放入到VFS中，返回fd-套接字
+         * 图Figure_3.2
+         */
+        retval = sock_map_fd(sock);
+        if (retval < 0)
+            goto out_release;
+
+    out:
+        /* It may be already another descriptor 8) Not kernel problem. */
+        return retval;
+
+    out_release:
+        sock_release(sock);
+        return retval;
+    }
+
+
+![Figure_3.2](./../../../../../../pic/Figure_3.2.png) 
+
