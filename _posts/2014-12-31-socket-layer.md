@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "socket layer"
-description: "howto the function of socket() implement"
+description: "socket fucntion implementation"
 category: TCP_IP.Architecture,.Design.and.Implementation.in.Linux
 tags: []
 ---

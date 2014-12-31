@@ -1,15 +1,15 @@
 ---
 layout: page
 title: WeirdUncle
-tagline: Supporting tagline
+tagline: 怪蜀黍的世界
 ---
-<h2>{{ page.title }}</h2>
-　　<p>最新文章</p>
-　　<ul>
-　　　　{% for post in site.posts %}
-　　　　　　<li>{{ post.date | date_to_string }} 
-                <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+最新文章
+---
+<ul>
+    {% for post in site.posts %}
+        <li>{{ post.date | date_to_string }} 
+            <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
         </li>
-　　　　{% endfor %}
-    </ul>
+    {% endfor %}
+</ul>
 
