@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Nginx-FIOASYNC"
-description: "socket fucntion implementation"
+description: "fioasync nginx"
 category: Nginx
 tags: []
 ---
