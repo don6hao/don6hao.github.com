@@ -6,6 +6,8 @@ category: Nginx
 tags: []
 ---
 
+>master进程主要负责监控worker子进程务、重启服务、平滑升级、更换日志文件、配置文件实时生效等功能，不需要处理网络事件，不负责业务的执行。
+
 master进程全貌图
 ---
 ![parent_handle_signal](./../../../../../../pic/parent_handle_signal.png) 
@@ -31,7 +33,7 @@ master进程如何处理信号
     }
 
 
->fork循环开始部分主要处理：
+>**for循环开始部分主要处理：**
 
 >1.设置定时器,定时发送SIGALRM信号
 
@@ -83,7 +85,9 @@ master进程如何处理信号
         }
 
 
->调用sigsuspend函数，master进程挂起等待有信号发生才走下去.
+>**sigsuspend()函数调用**
+    
+>该函数调用使得master进程的大部分时间都处于挂起状态，直到master进程收到信号（SIGALRM或其它信号)为止。
 
     /*
      * 延时等待定时器
@@ -99,7 +103,9 @@ master进程如何处理信号
 
     ngx_time_update();
 
->接受GIGCHLD信号：
+>**接受GIGCHLD信号**
+
+>有子进程意外结束，需要监控所有子进程
 
     /* 若ngx_reap为1，说明有子进程已退出 */
     if (ngx_reap) {
@@ -121,7 +127,7 @@ master进程如何处理信号
         ngx_master_process_exit(cycle);
     }
 
->接受到SIGINT信号
+>接受到SIGINT信号,若超时强制关闭worker子进程
 
     /* 收到sigint 信号 */
     if (ngx_terminate) {
@@ -149,7 +155,9 @@ master进程如何处理信号
         continue;
     }
 
->接收到SIGQUIT信号
+>**接收到SIGQUIT信号**
+    
+>关闭整个服务（子进程和套接字）
 
     /* 收到quit信号 */
     if (ngx_quit) {
@@ -170,7 +178,9 @@ master进程如何处理信号
         continue;
     }
 
->当收到SIGHUP信号
+>**当收到SIGHUP信号:**
+    
+>重新读取配置文件
 
     /*
      * 当 nginx 接收到 HUP 信号，它会尝试先解析配置文件（如果指定配置文件，就使用指定的，否则使用默认的），
@@ -243,7 +253,9 @@ master进程如何处理信号
         live = 1;
     }
 
->收到USR1信号
+>**收到USR1信号:**
+    
+>重新打开服务中的所有文件
 
     /* 重新打开log */
     if (ngx_reopen) {
@@ -254,7 +266,9 @@ master进程如何处理信号
                                     ngx_signal_value(NGX_REOPEN_SIGNAL));
     }
 
->收到USR2信号
+>**收到USR2信号:**
+    
+>平滑升级到新版本
 
     /* 热代码替换
      * 在不中断服务的情况下 - 新的请求也不会丢失，
@@ -270,7 +284,9 @@ master进程如何处理信号
         ngx_new_binary = ngx_exec_new_binary(cycle, ngx_argv);
     }
 
->收到WINCH信号
+>**收到WINCH信号:**
+    
+>所有子进程不再accept,关闭worker子进程
     
     /* 让worker进程停止接受accept连接，并让worker进程从容关闭 */
     if (ngx_noaccept) {
