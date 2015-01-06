@@ -28,8 +28,14 @@ master进程中信号的定义:
 
 
 
-master进程如何处理信号
+信号处理
 ---
+
+>信号的接受主要是[ngx_signal_handler函数](http://don6hao.github.io/nginx/2015/01/04/nginx-init-signal/)来处理，它接收到某信号后会设置对应的全局标志位。
+ngx_master_process_cycle函数循环检测这些全局标志位并进行对应的操作。
+
+>**ngx_master_process_cycle函数**
+
 >处理部分主要在ngx_master_process_cycle函数的for循环中
 
     void ngx_master_process_cycle(ngx_cycle_t *cycle)
