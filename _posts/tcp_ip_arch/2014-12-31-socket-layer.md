@@ -24,7 +24,7 @@ socket()
 
 socket()函数在内核中执行流程：
 
->socket()->sys_socketcall->sys_socket()->sock_create()
+>socket()->sys_socketcall->sys_socket()->sock_create()->__sock_create()->net_families[?]->create()
 
     asmlinkage long sys_socket(int family, int type, int protocol)
     {
@@ -45,16 +45,43 @@ socket()函数在内核中执行流程：
         retval = sock_map_fd(sock);
         if (retval < 0)
             goto out_release;
-
-    out:
-        /* It may be already another descriptor 8) Not kernel problem. */
-        return retval;
-
-    out_release:
-        sock_release(sock);
-        return retval;
     }
 
+
+>**net_families**:保存所有不同类型的协议族的全局链表
+
+>比如PF_INET协议族，inet_family_ops通过sock_regitser函数，把地址复制给net_families[PF_INET]
+
+    static struct net_proto_family inet_family_ops = {
+        .family = PF_INET,
+        .create = inet_create,
+        .owner	= THIS_MODULE,
+    };
+
+
+    int sock_register(struct net_proto_family *ops)
+    {
+        if (net_families[ops->family] == NULL) {
+            net_families[ops->family]=ops;
+            err = 0;
+        }
+    }   
+
+>**__sock_create函数**
+
+>创建套接字时使用协议族参数作为偏移量，从net_families数组中获得协议族指针，进而调用该协议族的创建函数。
+
+>若family为PF_INET,就会调用inet_create函数来初始化socket结构体
+
+    static int __sock_create(int family, int type, int protocol, struct socket **res, int kern)
+    {
+        /* 若family等于PF_INET, net_families[PF_INET]->create指向inet_create函数 */
+        if ((err = net_families[family]->create(sock, protocol)) < 0) {
+            sock->ops = NULL;
+            goto out_module_put;
+        }
+
+    }
 
 ![Figure_3.2](./../../../../../../pic/Figure_3.2.png) 
 
