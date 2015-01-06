@@ -14,7 +14,19 @@ master进程全貌图
 
 master进程中信号的定义:
 ---
-![signal](./../../../../../../pic/signal.png) 
+
+|     信号     |        全局变量    |      含义          |
+| -------------| ------------------ | ------------------ |
+| QUIT         | ngx_quit           | 优雅地关闭整个服务 |
+| TERM 或 INT  | ngx_terminate      | 强制关闭整个服务   |
+| USR1         | ngx_reopen         | 重新打开服务中的所有文件 |
+| WINCH        | ngx_noaccept       | 所有子进程不在accept连接，实际相当于对所有子进程发送QUIT信号 |
+| USR2         | ngx_change_binary  | 平滑升级到新版本 |
+| HUP          | ngx_reconfigure    | 重新读取配置文件 |
+| CHLD         | ngx_reap           | 子进程意外结束，需要监控子进程 |
+
+
+
 
 master进程如何处理信号
 ---
