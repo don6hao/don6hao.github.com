@@ -9,7 +9,7 @@ tags: []
 
 信号处理
 ---
->worker信号主要是[ngx_signal_handler函数](http://don6hao.github.io/nginx/2015/01/04/nginx-init-signal/)来处理，它接收到某信号后会设置对应的全局标志位。
+>worker信号主要是[ngx_signal_handler函数](http://don6hao.github.io/blog/2015/01/04/nginx-init-signal.html)来处理，它接收到某信号后会设置对应的全局标志位。
 
 >worker进程会调用ngx_worker_process_cycle函数循环检测标志位并进行对应操作。
 
