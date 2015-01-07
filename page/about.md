@@ -1,6 +1,6 @@
 ---
 layout: blog
-title: 关于
+title: who am i
 ---
 
-我能吞下玻璃而不伤身体  
+怪蜀黍浩仔

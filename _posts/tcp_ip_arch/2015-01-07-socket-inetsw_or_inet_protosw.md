@@ -2,7 +2,7 @@
 layout: post
 title: "TCP/IP-->Socket-->inetsw和inet_protosw"
 description: "inetsw struct inet_protosw"
-category: TCP_IP.Architecture,.Design.and.Implementation.in.Linux
+category: TCP_IP.Architecture.Design.and.Implementation.in.Linux
 tags: []
 ---
 

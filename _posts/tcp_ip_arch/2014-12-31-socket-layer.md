@@ -2,7 +2,7 @@
 layout: post
 title: "TCP/IP-->Socket-->socket layer"
 description: "socket fucntion implementation"
-category: TCP_IP.Architecture,.Design.and.Implementation.in.Linux
+category: TCP_IP.Architecture.Design.and.Implementation.in.Linux
 tags: []
 ---
 
