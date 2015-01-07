@@ -1,9 +1,5 @@
-- href: /page/timing.html
-  icon: fa fa-clock-o
-  title: 时间轴
-
 - href: /page/life.html
-  icon: fa fa-life
+  icon: fa fa-tags
   title: 生活
 
 - href: /page/read.html
@@ -12,7 +8,11 @@
 
 - href: /page/category.html
   icon: fa fa-tags
-  title: 分类
+  title: 归档 
+
+- href: /page/timing.html
+  icon: fa fa-clock-o
+  title: 时间轴
 
 - href: /page/about.html
   icon: fa fa-paper-plane-o
