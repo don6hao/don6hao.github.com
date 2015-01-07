@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "TCP/IP-->Socket-->socket layer"
+title: "TCP/IP-->Socket_Layer-->套接字创建流程"
 description: "socket fucntion implementation"
 category: TCP_IP.Architecture.Design.and.Implementation.in.Linux
 tags: []

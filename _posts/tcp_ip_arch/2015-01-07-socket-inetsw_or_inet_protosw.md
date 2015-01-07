@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "TCP/IP-->Socket-->inetsw和inet_protosw"
+title: "TCP/IP-->Socket_Layer-->PF_INET协议族注册"
 description: "inetsw struct inet_protosw"
 category: TCP_IP.Architecture.Design.and.Implementation.in.Linux
 tags: []
@@ -8,7 +8,7 @@ tags: []
 
 **inetsw结构体**
 ---
->inetsw是指向链表的数组，每个数组成员都指向的链表代表不同的套接字类型,比如TCP，UDP或RAW等。
+>inetsw是指向链表的数组，每个数组成员都指向的链表代表不同的网络协议类型,比如TCP，UDP或RAW等。
 
     {% highlight ruby %}
     enum sock_type {
@@ -35,7 +35,7 @@ tags: []
 **inetsw_array结构体**
 ---
         
->包含PF_INET协议族的所有套接字类型的信息。INET套接字类型：SOCK_STREAM, SOCK_DGRAM, SOCK_RAW
+>包含PF_INET协议族的所有网络协议类型的信息。INET网络协议类型：TCP--SOCK_STREAM, UDP--SOCK_DGRAM, IP--SOCK_RAW
 
     static struct inet_protosw inetsw_array[] =
     {
