@@ -83,5 +83,5 @@ socket(family, type, protocol)函数在内核中执行流程：
 
     }
 
-![Figure_3.2](./../../../../../../pic/Figure_3.2.png) 
+<p><img src="./../../../../../../pic/Figure_3.2.png" alt="Figure_3.2" width="800" height="400" /> </p>
 
