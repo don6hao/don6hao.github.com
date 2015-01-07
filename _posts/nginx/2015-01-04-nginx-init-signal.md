@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Nginx-信号"
+title: "Nginx--信号"
 description: "signal nginx"
 category: Nginx
 tags: []

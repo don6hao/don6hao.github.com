@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Nginx-master进程的信号处理"
+title: "Nginx--master进程的信号处理"
 description: "master process signal nginx"
 category: Nginx
 tags: []

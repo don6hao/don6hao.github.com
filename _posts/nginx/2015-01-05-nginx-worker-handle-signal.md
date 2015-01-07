@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Nginx-worker进程的信号处理"
+title: "Nginx--worker进程的信号处理"
 description: "worker process signal nginx"
 category: Nginx
 tags: []

@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "TCP/IP-socket layer"
+title: "TCP/IP-->Socket-->socket layer"
 description: "socket fucntion implementation"
-category: TCP_IP.Architecture,.Design.and.Implementation.in.Linux
+category: TCP_IP.Architecture,.Design.and.Implementation.in.Linux/socket
 tags: []
 ---
 
@@ -22,7 +22,7 @@ socket()
 用户调用socket函数时会调用内核层的sys_socket函数.sys_socket函数通过socket函数传递来的protocol,family
 ,type三个参数来创建对应的(TCP/UDP/RAW等)协议栈。
 
-socket()函数在内核中执行流程：
+socket(family, type, protocol)函数在内核中执行流程：
 
 >socket()->sys_socketcall->sys_socket()->sock_create()->__sock_create()->net_families[?]->create()
 
