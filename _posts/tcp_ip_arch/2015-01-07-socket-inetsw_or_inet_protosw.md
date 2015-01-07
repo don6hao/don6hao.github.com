@@ -35,7 +35,7 @@ tags: []
 **inetsw_array结构体**
 ---
         
->包含所有INET套接字类型的信息。INET套接字类型：SOCK_STREAM, SOCK_DGRAM, SOCK_RAW
+>包含PF_INET协议族的所有套接字类型的信息。INET套接字类型：SOCK_STREAM, SOCK_DGRAM, SOCK_RAW
 
     static struct inet_protosw inetsw_array[] =
     {
