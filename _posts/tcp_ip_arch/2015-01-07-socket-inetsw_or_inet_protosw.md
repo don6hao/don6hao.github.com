@@ -105,11 +105,12 @@ tags: []
             answer = list_entry(lh, struct inet_protosw, list);
 
             /* Check only the non-wild match. */
-            /*INET_PROTOSW_PERMANENT 表示不能被移除的协议 */
+            /* 检查是否有已经注册过的socket type
+             * 若flags中的INET_PROTOSW_PERMANENT(表示不能被移除的协议)位等于1
+             * 且protocol相等，不能覆盖已有的socket类型.
+             * 直接break跳出循环，answer不等于NULL，跳转到out_permanent
+             */
             if (INET_PROTOSW_PERMANENT & answer->flags) {
-                /* 若protocol相同表示参数p与answer相同，
-                 * 代码不允许p替代answer，则退出跳到out_permanent.
-                 */
                 if (protocol == answer->protocol)
                     break;
                 last_perm = lh;
