@@ -10,6 +10,7 @@ tags: []
 ---
 >inetsw是指向链表的数组，每个数组成员都指向的链表代表不同的套接字类型,比如TCP，UDP或RAW等。
 
+    {% highlight ruby %}
     enum sock_type {
         SOCK_DGRAM	= 1,
         SOCK_STREAM	= 2,
@@ -23,6 +24,7 @@ tags: []
     #define SOCK_MAX (SOCK_PACKET + 1)
 
     static struct list_head inetsw[SOCK_MAX];
+    {% endhighlight %}
 
 >inetsw在inet_init函数中初始化
 
@@ -78,6 +80,7 @@ tags: []
 >inetsw_array的每个成员根据.type插入到inetsw[type]的链表中
 
     #define INETSW_ARRAY_LEN (sizeof(inetsw_array) / sizeof(struct inet_protosw))
+
     void inet_register_protosw(struct inet_protosw *p)
     {
         struct list_head *lh;
@@ -143,3 +146,4 @@ tags: []
                p->type);
         goto out;
     }
+
