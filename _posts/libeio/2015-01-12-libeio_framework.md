@@ -100,7 +100,11 @@ tags: []
     int main (void)
     {
         printf ("pipe ()\n");
-        //建立管道
+        /*
+         * 建立管道
+         * 在worker线程完成IO请求，通知主线程的机制是需要使用者自定义的
+         * 这里我们使用pipe(一种常用的线程通知机制）作为通信机制
+         */
         if (pipe(respipe)) abort ();
         printf ("eio_init ()\n");
 
