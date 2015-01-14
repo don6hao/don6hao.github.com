@@ -13,7 +13,7 @@ tags: []
 
 inetsw_array
 ---
-inetsw_array包含任何IP协议的所有信息，在inet_create函数中将使用struct sock和struct socket来存储这些信息已方便当前套接字使用。
+inetsw_array包含各种IP协议的所有信息，在inet_create函数中将使用struct sock和struct socket来存储这些信息已方便当前套接字使用。
 
 比如inetsw_array[0]的值
 
@@ -136,10 +136,11 @@ protocol等于IPPROTO_IP不等于IPPROTO_TCP(answer->protocl),把answer->protoco
 
         inet->id = 0;
 
-sock_init_data函数初始化sock(struct socket)和sk(struct sk)，若sock不为空则进行sock->sk	=	sk操作
+sock_init_data函数初始化sk(struct sock)与IP协议相关联的部分，若sock不为空则进行sock->sk=sk操作
 
         sock_init_data(sock, sk);
 
+        /* called for cleanup operations on the socket when it is destroyed. */
         sk->sk_destruct	   = inet_sock_destruct;
         sk->sk_family	   = PF_INET;
         sk->sk_protocol	   = protocol;
