@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Libeio--libeio初始化，REQ/RES队列，锁，线程池"
+title: "Libeio--libeio初始化，REQ/RES队列，锁，线程"
 description: "libeio asynchronous"
 category: Libeio 
 tags: []
@@ -38,10 +38,29 @@ eio_init函数：初始化libeio库。成功返回0，失败返回-1并且设置
         wrk_first.next =
         wrk_first.prev = &wrk_first;
 
-        started  = 0;
+        /*
+         *  number of worker threads currently running.
+         */
+        started  = 0; 
+        /*
+         * 表示处于COND_WAIT状态下的空闲线程数
+         */
         idle     = 0;
+        /*
+         * nreqs: number of requests currently handled by libeio. 
+         * This is the total number of requests that have been submitted to libeio, but not yet destroyed.
+         */
         nreqs    = 0;
+        /*
+         * nready : number of ready requests, 
+         * i.e. requests that have been submitted but have not yet entered the execution phase.
+         */
         nready   = 0;
+        /*
+         * npending : number of pending requests, 
+         * i.e. requests that have been executed and have results, 
+         * but have not been finished yet by a call to eio_poll)
+         */
         npending = 0;
 
         //设置回调函数
@@ -214,10 +233,24 @@ worker线程中使用X_COND_WAIT或X_COND_TIMEDWAIT来接受条件锁信号
     }
 
 
-work线程池
+work线程
 ---
 
-线程池初始化：
+线程初始化：
+
+    static void
+    etp_maybe_start_thread (void)
+    {
+        if (ecb_expect_true (etp_nthreads () >= wanted))
+            return;
+
+        /* todo: maybe use idle here, but might be less exact */
+        if (ecb_expect_true (0 <= (int)etp_nthreads () + (int)etp_npending () - (int)etp_nreqs ()))
+            return;
+
+        etp_start_thread ();
+    }
+
 通过calloc分配work线程资源并挂在wrk_first双向链表上
 
     static etp_worker wrk_first; /* NOT etp */
@@ -246,6 +279,24 @@ work线程池
         X_UNLOCK (wrklock);
     }
 
+创建属性detached(不用考虑线程资源的回收)的线程
+
+    static int
+    xthread_create (xthread_t *tid, void *(*proc)(void *), void *arg)
+    {
+        int retval;
+        pthread_attr_t attr;
+
+        pthread_attr_init (&attr);
+        pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+
+        retval = pthread_create (tid, &attr, proc, arg) == 0;
+
+        pthread_attr_destroy (&attr);
+
+        return retval;
+    }
+
 从链表上移除
 
     static void ecb_cold
@@ -258,3 +309,5 @@ work线程池
 
         free (wrk);
     }
+
+

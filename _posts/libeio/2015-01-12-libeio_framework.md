@@ -101,7 +101,7 @@ tags: []
     {
         printf ("pipe ()\n");
         /*
-         * 建立管道
+         * 创建管道
          * 在worker线程完成IO请求，通知主线程的机制是需要使用者自定义的
          * 这里我们使用pipe(一种常用的线程通知机制）作为通信机制
          */
@@ -114,12 +114,14 @@ tags: []
 
         do{
             /*
-             * eio_nop 
-             * 1. 把参数封装成request(eio_req)并eio_submit操作
-             * 2. 把request放入到req_queue队列中(reqq_push操作)
-             * 3. 告知worker线程有请求到达(cond_signal操作)。
+             * eio_nop : 把参数封装成request(eio_req)并eio_submit操作
+             *
+             * eio_submit会进行以下操作:
+             * 1. 把request放入到req_queue队列中(reqq_push操作)
+             * 2. 告知worker线程有请求到达(cond_signal操作)。
+             * 3. eio_submit会启动一个work线程
 
-             * eio_submit会启动一个work线程：
+             * 启动的work线程会进行以下操作：
              * 1. reqq_shift从req_queue取数据。
              * 2. cond_wait等待cond_signal的信息。
              * 3. 把req放入到res_queue队列中，若want_poll_cb非空，执行want_poll_cb(want_poll_cb指向want_poll)。
@@ -132,3 +134,182 @@ tags: []
         return 0;
     }
 
+
+eio_submit函数
+---
+    ETP_API_DECL void
+    etp_submit (ETP_REQ *req)
+    {
+        req->pri -= ETP_PRI_MIN;
+
+        if (ecb_expect_false (req->pri < ETP_PRI_MIN - ETP_PRI_MIN)) req->pri = ETP_PRI_MIN - ETP_PRI_MIN;
+        if (ecb_expect_false (req->pri > ETP_PRI_MAX - ETP_PRI_MIN)) req->pri = ETP_PRI_MAX - ETP_PRI_MIN;
+
+        if (ecb_expect_false (req->type == ETP_TYPE_GROUP))
+        {
+            /* group request */
+            /* I hope this is worth it :/ */
+            X_LOCK (reqlock);
+            ++nreqs;
+            X_UNLOCK (reqlock);
+
+            X_LOCK (reslock);
+
+            ++npending;
+
+            if (!reqq_push (&res_queue, req) && want_poll_cb)
+            want_poll_cb ();
+
+            X_UNLOCK (reslock);
+        }
+        else
+        {
+            X_LOCK (reqlock);
+            ++nreqs;
+            ++nready;
+            /* 把request放入到req_queue队列中(reqq_push操作) */
+            reqq_push (&req_queue, req);
+            /* 告知worker线程有请求到达(cond_signal操作) */
+            X_COND_SIGNAL (reqwait);
+            X_UNLOCK (reqlock);
+
+            /* 
+             * 启动的work线程会进行以下操作：
+             * 1. reqq_shift从req_queue取数据。
+             * 2. cond_wait等待cond_signal的信息。
+             * 3. 把req放入到res_queue队列中，若want_poll_cb非空，执行want_poll_cb(want_poll_cb指向want_poll)。
+             */
+            etp_maybe_start_thread ();
+        }
+    }
+
+worker线程
+---
+work线程调用etp_proc函数。[libeio线程](http://don6hao.github.io/blog/2015/01/12/libeio_data.html)
+
+    static void ecb_cold
+    etp_start_thread (void)
+    {
+        etp_worker *wrk = calloc (1, sizeof (etp_worker));
+
+        /*TODO*/
+        assert (("unable to allocate worker thread data", wrk));
+
+        X_LOCK (wrklock);
+
+        /* 调用etp_proc函数 */
+        if (xthread_create (&wrk->tid, etp_proc, (void *)wrk))
+        {
+            wrk->prev = &wrk_first;
+            wrk->next = wrk_first.next;
+            wrk_first.next->prev = wrk;
+            wrk_first.next = wrk;
+            ++started;
+        }
+        else
+            free (wrk);
+
+        X_UNLOCK (wrklock);
+    }
+
+
+
+etp_proc函数
+---
+
+若req_queue有数据时:
+1. 调用ETP_EXECUTE->eio_execute(eio_execute最底层的处理函数,根据请求的类型调用相应函数操作),把结果返回给req.
+2. 把req数据push到res_queue中，然后调用want_poll_cb回调函数(通知主线程有数据可读)
+
+若req_queue无数据时:
+libeio只允许max_idle个线程处于空闲等待X_COND_WAIT，从第max_idle+1个线程开始超时等待（若超时就线程退出）
+
+    #define X_THREAD_PROC(name) static void *name (void *thr_arg)
+    X_THREAD_PROC (etp_proc)
+    {
+        ETP_REQ *req;
+        struct timespec ts;
+        etp_worker *self = (etp_worker *)thr_arg;
+
+        etp_proc_init ();
+
+        /* try to distribute timeouts somewhat evenly */
+        ts.tv_nsec = ((unsigned long)self & 1023UL) * (1000000000UL / 1024UL);
+
+        for (;;)
+        {
+            ts.tv_sec = 0;
+
+            X_LOCK (reqlock);
+
+            for (;;)
+            {
+                req = reqq_shift (&req_queue);
+
+                /* req_queue有数据就跳出循环 */
+                if (req)
+                    break;
+
+                if (ts.tv_sec == 1) /* no request, but timeout detected, let's quit */
+                {
+                    /* 超时就线程退出 */
+                    X_UNLOCK (reqlock);
+                    X_LOCK (wrklock);
+                    --started;
+                    X_UNLOCK (wrklock);
+                    goto quit;
+                }
+
+                ++idle;
+
+                /* libeio只允许max_idle个线程处于空闲等待X_COND_WAIT
+                 * 从第max_idle+1个线程开始，进行超时等待判断（若超时就线程退出）
+                 */
+                if (idle <= max_idle)
+                    /* we are allowed to idle, so do so without any timeout */
+                    X_COND_WAIT (reqwait, reqlock);
+                else
+                {
+                    /* initialise timeout once */
+                    if (!ts.tv_sec)
+                        ts.tv_sec = time (0) + idle_timeout;
+
+                    if (X_COND_TIMEDWAIT (reqwait, reqlock, ts) == ETIMEDOUT)
+                        ts.tv_sec = 1; /* assuming this is not a value computed above.,.. */
+                }
+
+                --idle;
+            }
+
+            --nready;
+
+            X_UNLOCK (reqlock);
+
+            /* 收到线程退出的request */
+            if (req->type == ETP_TYPE_QUIT)
+                goto quit;
+
+            ETP_EXECUTE (self, req);
+
+            X_LOCK (reslock);
+
+            ++npending;
+
+            if (!reqq_push (&res_queue, req) && want_poll_cb)
+                want_poll_cb ();
+
+            etp_worker_clear (self);
+
+            X_UNLOCK (reslock);
+        }
+
+    quit:
+        free (req);
+
+        X_LOCK (wrklock);
+        /* 从线程池中移除 */
+        etp_worker_free (self);
+        X_UNLOCK (wrklock);
+
+        return 0;
+    }
