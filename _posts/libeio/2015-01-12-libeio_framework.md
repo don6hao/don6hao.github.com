@@ -31,7 +31,6 @@ tags: []
      * worker线程通知主线程的机制是通过向 pipe[1]写一个 byte
      * 数据(event_loop->poll)
      */
-
     void want_poll (void)
     {
         char dummy;
@@ -44,8 +43,6 @@ tags: []
      * done_poll回调函数,赋值给done_poll_cb
      * done_poll 从 pipe[0]读出一个 byte 数据，该 IO 操作完成
      */
-
-
     void done_poll (void)
     {
         char dummy;
@@ -53,8 +50,10 @@ tags: []
         read (respipe [0], &dummy, 1);
     }
 
-    //事件循环
+want_poll函数是worker线程调用，done_poll是主线程调用。libeio要user通过这两个函数实现worker线程和主线程之间的通信。
 
+
+    //事件循环
     void event_loop (void)
     {
         // an event loop. yeah.
@@ -85,7 +84,7 @@ tags: []
         printf ("leaving event loop\n");
     }
 
-    //eio_finish->req->finish函数（eio_nop中把res_cb赋值给req->finish)
+eio_finish->req->finish函数（eio_nop中把res_cb赋值给req->finish)
 
     int res_cb (eio_req *req)
     {
@@ -313,3 +312,86 @@ libeio只允许max_idle个线程处于空闲等待X_COND_WAIT，从第max_idle+1
 
         return 0;
     }
+
+
+eio_poll->etp_poll
+---
+主要是完成res_queue中就绪的eio_req对象的处理。ETP_FINISH宏中会调用eio_req中绑定的回调函数(上面测试代码中绑定的函数就是res_cb函数).
+
+    #define EIO_FINISH(req)  ((req)->finish) && !EIO_CANCELLED (req) ? (req)->finish (req) : 0
+
+    ETP_API_DECL int
+    etp_poll (void)
+    {
+        unsigned int maxreqs;
+        unsigned int maxtime;
+        struct timeval tv_start, tv_now;
+
+        X_LOCK (reslock);
+        maxreqs = max_poll_reqs;
+        maxtime = max_poll_time;
+        X_UNLOCK (reslock);
+
+        if (maxtime)
+            gettimeofday (&tv_start, 0);
+
+        for (;;)
+        {
+            ETP_REQ *req;
+
+            etp_maybe_start_thread ();
+
+            X_LOCK (reslock);
+            req = reqq_shift (&res_queue);
+
+            /*
+             * 取出数据然后调用done_poll_cb回调函数读取线程间的信息
+             */
+            if (req)
+            {
+                --npending;
+                if (!res_queue.size && done_poll_cb)
+                    done_poll_cb ();
+            }
+
+            X_UNLOCK (reslock);
+
+            if (!req)
+                return 0;
+
+            X_LOCK (reqlock);
+            --nreqs;
+            X_UNLOCK (reqlock);
+
+            if (ecb_expect_false (req->type == ETP_TYPE_GROUP && req->size))
+            {
+                req->int1 = 1; /* mark request as delayed */
+                continue;
+            }
+            else
+            {
+                /*
+                 * 上面测试代码eio_nop中把res_cb赋值给req->finish（ETP_FINISH->eio_finish->EIO_FINISH)
+                 */
+                int res = ETP_FINISH (req);
+                if (ecb_expect_false (res))
+                    return res;
+            }
+
+            if (ecb_expect_false (maxreqs && !--maxreqs))
+                break;
+
+            if (maxtime)
+            {
+                gettimeofday (&tv_now, 0);
+
+                if (etp_tvdiff (&tv_start, &tv_now) >= maxtime)
+                break;
+            }
+        }
+
+        errno = EAGAIN;
+        return -1;
+    }
+
+
