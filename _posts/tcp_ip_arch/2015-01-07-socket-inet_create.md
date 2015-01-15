@@ -9,7 +9,11 @@ tags: []
 创建PF_INET协议族的套接字
 ---
 
-用户层调用socket(family,type,protocol)函数（[socket函数执行流程](http://don6hao.github.io/blog/2014/12/31/socket-layer.html))，若family等于PF_INET协议族的话，内核最终会调用inet_create函数来创建套接字。
+用户层调用socket(family,type,protocol)函数（[socket函数执行流程](http://don6hao.github.io/blog/2014/12/31/socket-layer.html))，
+若family等于PF_INET协议族的话，内核最终会调用inet_create(若type等于SOCK_STREAM,则inet_create->tcp_v4_init_sock)函数来创建套接字。
+
+<p><img src="./../../../../../../pic/Figure_3.4.png" alt="Figure_3.2"
+width="300" height="200" /> </p>
 
 inetsw_array
 ---
@@ -165,7 +169,8 @@ sock_init_data函数初始化sk(struct sock)与IP协议相关联的部分，若s
             sk->sk_prot->hash(sk);
         }
 
-从上面得知sk->sk_prot指向answer_prot.假设answer_prot指向tcp_prot，sk->sk_prot->init就会调用tcp_v4_init_sock(struct sock *sk)
+从上面得知sk->sk_prot指向answer_prot.假设answer_prot指向tcp_prot，sk->sk_prot->init就会调用tcp_v4_init_sock(struct sock *sk)。tcp_v4_init_sock也是初始化一些变量和函数指针（比如send/receive
+buffer的大小，定时器等）。
 
         if (sk->sk_prot->init) {
             err = sk->sk_prot->init(sk);
@@ -178,3 +183,7 @@ sock_init_data函数初始化sk(struct sock)与IP协议相关联的部分，若s
         rcu_read_unlock();
         goto out;
     }
+
+inet_create函数的核心就是sk(struct sock)初始化，
+它包含PF_INET协议族的相关函数操作集，具体协议(上面代码是TCP协议）的相关函数操作集，套接字的相关信息等。
+套接字初始化完毕后，就可以调用函数(bind, listen, accept等）来处理网络来的数据。
