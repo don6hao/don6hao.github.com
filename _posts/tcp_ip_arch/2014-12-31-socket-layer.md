@@ -24,7 +24,7 @@ socket()
 
 socket(family, type, protocol)函数在内核中执行流程：
 
->socket()->sys_socketcall->sys_socket()->sock_create()->__sock_create()->net_families[?]->create()
+socket()->sys_socketcall->sys_socket()->sock_create()->__sock_create()->net_families[?]->create()
 
     asmlinkage long sys_socket(int family, int type, int protocol)
     {
@@ -48,9 +48,9 @@ socket(family, type, protocol)函数在内核中执行流程：
     }
 
 
->**net_families**:保存所有不同类型的协议族的全局链表
+**net_families**:保存所有不同类型的协议族的全局链表
 
->比如PF_INET协议族，inet_family_ops通过sock_regitser函数，把地址复制给net_families[PF_INET]
+比如PF_INET协议族，inet_family_ops通过sock_regitser函数，把地址复制给net_families[PF_INET]
 
     static struct net_proto_family inet_family_ops = {
         .family = PF_INET,
@@ -67,11 +67,11 @@ socket(family, type, protocol)函数在内核中执行流程：
         }
     }   
 
->**__sock_create函数**
+**__sock_create函数**
 
->创建套接字时使用协议族参数作为偏移量，从net_families数组中获得协议族指针，进而调用该协议族的创建函数。
+创建套接字时使用协议族参数作为偏移量，从net_families数组中获得协议族指针，进而调用该协议族的创建函数。
 
->若family为PF_INET,就会调用inet_create函数来初始化socket结构体
+若family为PF_INET,就会调用inet_create函数来初始化socket结构体
 
     static int __sock_create(int family, int type, int protocol, struct socket **res, int kern)
     {
@@ -83,5 +83,6 @@ socket(family, type, protocol)函数在内核中执行流程：
 
     }
 
+socket返回一个fd(file descirptor),fd通过VFS可以找到相对应的socket信息。
 <p><img src="./../../../../../../pic/Figure_3.2.png" alt="Figure_3.2" width="800" height="400" /> </p>
 
