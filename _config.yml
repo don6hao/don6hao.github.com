@@ -5,8 +5,8 @@ paginate: 6
 paginate_path: page/:num
 
 blog:
-    name: Weird Uncle                                               # 博客名称
-    description:                                         # 博客描述
+    name: don7hao                                               # 博客名称
+    description: 烂笔头                                        # 博客描述
     title:                                               # 网页标题
     url:                                                 # 博客地址
     duoshuo:                                             # 多说ID
@@ -14,10 +14,10 @@ blog:
     qiniu:                                               # 七牛云地址
 author:
     name: Hao Zai                                               # 作者名称
-    email: don6hao@gmail.com                                        # 邮箱地址
-    twitter: don6hao                                              # 微博地址
-    github:                                              # GitHub地址
-    logo:                                                # logo地址
+    email: don6hao@gmail.com                                     # 邮箱地址
+    twitter: don6hao                                             # 微博地址
+    github: github.com/don6hao                                   # GitHub地址
+    logo: anonymous                                    # logo地址
     douban:
         name:                                            # 豆瓣地址名称
         key:                                             # 豆瓣API Key
