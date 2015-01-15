@@ -6,6 +6,11 @@ category: Libeio
 tags: []
 ---
 
+libeio数据
+---
+
+libeio使用的数据主要包括多线程（主线程和worker线程），锁(互斥锁和条件锁），队列（req_queue和res_queue)。
+
 libeio 初始化
 ---
     int eio_init (void (*want_poll)(void), void (*done_poll)(void))

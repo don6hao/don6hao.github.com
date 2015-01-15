@@ -9,7 +9,7 @@ tags: []
 
 ![libeio_framework_1.png](./../../../../../../pic/libeio_framework_1.png) 
 
-libeio的异步非阻塞实现是通过多线程来实现，线程间通信机制是由使用者自己设计的（下面的测试代码是通过管道来实现的）。
+libeio的异步非阻塞实现是通过[多线程](http://don6hao.github.io/blog/2015/01/12/libeio_data.html)来实现，线程间通信机制是由使用者自己设计的（下面的测试代码是通过管道来实现的）。
 
 执行的大概步骤：
 
