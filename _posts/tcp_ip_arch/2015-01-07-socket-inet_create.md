@@ -17,7 +17,7 @@ width="300" height="200" /> </p>
 
 inetsw_array
 ---
-inetsw_array包含各种IP协议的所有信息，在inet_create函数中将使用struct sock和struct socket来存储这些信息已方便当前套接字使用。
+inetsw_array包含支持PF_INET协议族的各种IP协议（TCP，UDP，RAW）的所有信息，在inet_create函数中将使用struct sock和struct socket来存储这些信息已方便当前套接字使用。
 
 比如inetsw_array[0]的值
 
@@ -185,5 +185,5 @@ buffer的大小，定时器等）。
     }
 
 inet_create函数的核心就是sk(struct sock)初始化，
-它包含PF_INET协议族的相关函数操作集，具体协议(上面代码是TCP协议）的相关函数操作集，套接字的相关信息等。
+它包含PF_INET协议族的相关函数操作集，指定协议套接字(TCP，UDP，RAW）的相关函数操作集，协议相关的数据结构的初始化等。
 套接字初始化完毕后，就可以调用函数(bind, listen, accept等）来处理网络来的数据。
