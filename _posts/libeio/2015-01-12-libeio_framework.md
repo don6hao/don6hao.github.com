@@ -9,6 +9,19 @@ tags: []
 
 ![libeio_framework_1.png](./../../../../../../pic/libeio_framework_1.png) 
 
+libeio的异步非阻塞实现是通过多线程来实现，线程间通信机制是由使用者自己设计的（下面的测试代码是通过管道来实现的）。
+
+执行的大概步骤：
+
+1.主线程首先通过eio_init函数建立线程间的通信机制（这个机制是要使用者通过设计want_poll和done_poll来实现线程间通信）。
+
+2.下一步主线程封装一个requst（成员type指向libeio支持的函数名）调用eio_submit把request放到req_queue中并启动work线程。
+
+3.worker线程启动后从req_queue队列中读取request，然后放入res_queue队里中并通过want_poll告知主线程有数据可取。
+
+4.主线程知道后就调用eio_poll从res_queue队列中取出数据并根据request的type调用对应的函数。
+
+
 测试代码
 ---
 
@@ -23,6 +36,8 @@ tags: []
     #include <sys/stat.h>
 
     #include "eio.h"
+
+want_poll函数是worker线程调用，done_poll是主线程调用。libeio要user通过这两个函数实现worker线程和主线程之间的通信。
 
     int respipe [2];
 
@@ -49,8 +64,6 @@ tags: []
         printf ("done_poll ()\n");
         read (respipe [0], &dummy, 1);
     }
-
-want_poll函数是worker线程调用，done_poll是主线程调用。libeio要user通过这两个函数实现worker线程和主线程之间的通信。
 
 
     //事件循环
