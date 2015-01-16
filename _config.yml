@@ -21,3 +21,5 @@ author:
     douban:
         name:                                            # 豆瓣地址名称
         key:                                             # 豆瓣API Key
+
+markdown: redcarpet  #中文支持
