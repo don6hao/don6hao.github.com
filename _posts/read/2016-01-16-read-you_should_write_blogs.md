@@ -3,6 +3,7 @@ layout: post
 title: "阅读--you should write blogs"
 description: "read write blogs"
 category: read
+doushuo: true
 tags: []
 ---
 
