@@ -10,7 +10,7 @@ tags: []
 原文地址 : **[you-should-write-blogs](https://sites.google.com/site/steveyegge2/you-should-write-blogs)**
 
 
-**好记性不如烂笔头**。
+**好记性不如烂笔头**
 ---
 
 写博客的目的
