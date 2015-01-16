@@ -5,11 +5,11 @@ paginate: 6
 paginate_path: page/:num
 
 blog:
-    name: don7hao                                               # 博客名称
-    description: 烂笔头                                        # 博客描述
-    title:                                               # 网页标题
-    url:                                                 # 博客地址
-    duoshuo: don7hao                                          # 多说ID
+    name: don7hao                                        # 博客名称
+    description: 烂笔头                                  # 博客描述
+    title: don7hao                                       # 网页标题
+    url: don6hao.github.com                              # 博客地址
+    duoshuo: don7hao                                     # 多说ID
     tongji:                                              # 百度统计ID
     qiniu:                                               # 七牛云地址
 author:
