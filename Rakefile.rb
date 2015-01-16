@@ -47,13 +47,17 @@ task :post do
     exit -1  
   end 
 
+  puts category
+  puts title
   # 新增，首先判断分类目录是否存在，不存在则创建  
   filename = File.join(CONFIG['post'], category)
   if !File.directory?(filename)  
     mkdir_p filename  
   end 
-  filename = File.join(CONFIG['post'], "#{date}-#{slug}.#{CONFIG['post_ext']}")
+  #filename = File.join(CONFIG['post'], "#{date}-#{slug}.#{CONFIG['post_ext']}")
+  filename = File.join(filename, "#{date}-#{slug}.#{CONFIG['post_ext']}")
   if File.exist?(filename)
+    puts filename
     abort("rake aborted!") if ask("#{filename} already exists. Do you want to overwrite?", ['y', 'n']) == 'n'
   end
 
