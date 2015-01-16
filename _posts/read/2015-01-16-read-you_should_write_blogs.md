@@ -7,7 +7,7 @@ doushuo: true
 tags: []
 ---
 
-**[you-should-write-blogs](https://sites.google.com/site/steveyegge2/you-should-write-blogs)**
+原文地址 : **[you-should-write-blogs](https://sites.google.com/site/steveyegge2/you-should-write-blogs)**
 
 
 我自己写博客的主要原因就是**好记性不如烂笔头**。
